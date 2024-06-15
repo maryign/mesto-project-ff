@@ -18,8 +18,6 @@ const editPopup = document.querySelector(".popup_type_edit");
 
 const addPopup = document.querySelector(".popup_type_new-card");
 const addButton = document.querySelector(".profile__add-button");
-// const cardImage = document.querySelector(".card__image");
-// const openedPopup = document.querySelector(".popup_is-opened");
 const closePopupButton = document.querySelectorAll(".popup__close");
 
 const newPlaceForm = document.forms["new-place"];
