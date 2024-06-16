@@ -38,8 +38,10 @@ buttonEditProfile.addEventListener("click", function (evt) {
 
 buttonAddNewCard.addEventListener("click", function (evt) {
     openModal(popupAddNewCard);
-    formNewPlace.addEventListener("submit", addNewPlace);
 });
+
+formEditProfile.addEventListener("submit", updateProfile);
+formNewPlace.addEventListener("submit", addNewPlace);
 
 popups.forEach(elem => {
         elem.classList.add("popup_is-animated");
@@ -54,6 +56,13 @@ closePopupButtons.forEach(elem =>
     })
 )
 
+function updateProfile(evt){
+    evt.preventDefault();
+    currentProfileName.textContent = inputProfileName.value;
+    currentProfileDescription.textContent = inputProfileDescription.value;
+    closeModal(popupEditProfile);
+}
+
 function setDefaultValuesFormProfile() {
     inputProfileName.value = currentProfileName.textContent;
     inputProfileDescription.value = currentProfileDescription.textContent;
@@ -64,7 +73,7 @@ function addNewPlace(evt) {
     placeContainer.prepend(createCard({
         name: inputPlaceName.value,
         link: inputLink.value,
-    }, removeCard, likeCard));
+    }, removeCard, likeCard, openCardImage));
     closeModal(popupAddNewCard);
     inputPlaceName.value = "";
     inputLink.value = "";

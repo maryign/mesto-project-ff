@@ -24,5 +24,5 @@ export function removeCard(event) {
 
 // @todo: Функция лайка карточки
 export function likeCard(event) {
-    event.target.classList.add("card__like-button_is-active");
+    event.target.classList.toggle("card__like-button_is-active");
 }
