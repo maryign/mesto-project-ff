@@ -1,11 +1,9 @@
 import "../pages/index.css";
-import {initialCards} from "./cards";
-import {
-    closeModal,
-    closePopupByOverlayClick,
-    openModal
-} from "./components/modal";
-import {createCard, likeCard, removeCard} from "./components/card";
+import {createCard} from "./components/card";
+import {closeModal, closePopupByOverlayClick, openModal} from "./components/modal";
+import {clearValidation, enableValidation} from "./validation";
+import {setProfileData} from "./components/profile";
+import {addCard, getInitialCards, getUserData, updateAvatar, updateUserData} from "./api";
 
 const popups = document.querySelectorAll(".popup");
 const currentProfileName = document.querySelector(".profile__title");
@@ -27,9 +25,18 @@ const placesContainer = document.querySelector(".places");
 const placeContainer = placesContainer.querySelector(".places__list");
 const closePopupButtons = document.querySelectorAll(".popup__close");
 
-initialCards.forEach(function (elem) {
-    placeContainer.append(createCard(elem, removeCard, likeCard, openCardImage));
-})
+Promise.all([getUserData(), getInitialCards()])
+    .then((results) => {
+        setProfileData(results[0]);
+        results[1].forEach(function (elem) {
+            const newCard = createCard(elem, openCardImage);
+            if (results[0]._id != elem.owner._id) {
+                const removeButton = newCard.querySelector(".card__delete-button");
+                removeButton.remove()
+            }
+            placeContainer.append(newCard);
+        })
+    });
 
 buttonEditProfile.addEventListener("click", function (evt) {
     openModal(popupEditProfile);
@@ -38,6 +45,7 @@ buttonEditProfile.addEventListener("click", function (evt) {
 
 buttonAddNewCard.addEventListener("click", function (evt) {
     openModal(popupAddNewCard);
+    setDefaultValuesAddNewCard();
 });
 
 formEditProfile.addEventListener("submit", updateProfile);
@@ -46,6 +54,16 @@ formNewPlace.addEventListener("submit", addNewPlace);
 popups.forEach(elem => {
         elem.classList.add("popup_is-animated");
         elem.addEventListener("click", closePopupByOverlayClick);
+        if (elem.querySelector('.popup__form') !== null) {
+            enableValidation({
+                formSelector: elem.querySelector('.popup__form'),
+                inputSelector: '.popup__input',
+                submitButtonSelector: '.popup__button',
+                inactiveButtonClass: 'popup__button_disabled',
+                inputErrorClass: 'popup__input_type_error',
+                errorClass: 'popup__error_visible'
+            });
+        }
     }
 )
 
@@ -56,8 +74,9 @@ closePopupButtons.forEach(elem =>
     })
 )
 
-function updateProfile(evt){
+async function updateProfile(evt) {
     evt.preventDefault();
+    await updateUserData(inputProfileName.value, inputProfileDescription.value)
     currentProfileName.textContent = inputProfileName.value;
     currentProfileDescription.textContent = inputProfileDescription.value;
     closeModal(popupEditProfile);
@@ -66,14 +85,38 @@ function updateProfile(evt){
 function setDefaultValuesFormProfile() {
     inputProfileName.value = currentProfileName.textContent;
     inputProfileDescription.value = currentProfileDescription.textContent;
+    const validationConfig = {
+        formSelector: formEditProfile,
+        inputSelector: '.popup__input',
+        submitButtonSelector: '.popup__button',
+        inactiveButtonClass: 'popup__button_disabled',
+        inputErrorClass: 'popup__input_type_error',
+        errorClass: 'popup__error_visible'
+    }
+    clearValidation(formEditProfile, validationConfig);
 }
 
-function addNewPlace(evt) {
+function setDefaultValuesAddNewCard() {
+    inputPlaceName.value = '';
+    inputLink.value = '';
+    const validationConfig = {
+        formSelector: formNewPlace,
+        inputSelector: '.popup__input',
+        submitButtonSelector: '.popup__button',
+        inactiveButtonClass: 'popup__button_disabled',
+        inputErrorClass: 'popup__input_type_error',
+        errorClass: 'popup__error_visible'
+    }
+    clearValidation(formNewPlace, validationConfig);
+}
+
+async function addNewPlace(evt) {
     evt.preventDefault();
+    await addCard(inputPlaceName.value, inputLink.value)
     placeContainer.prepend(createCard({
         name: inputPlaceName.value,
         link: inputLink.value,
-    }, removeCard, likeCard, openCardImage));
+    }, openCardImage));
     closeModal(popupAddNewCard);
     inputPlaceName.value = "";
     inputLink.value = "";
