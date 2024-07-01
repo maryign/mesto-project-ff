@@ -1,7 +1,7 @@
 import "../pages/index.css";
 import {createCard} from "./components/card";
 import {closeModal, closePopupByOverlayClick, openModal} from "./components/modal";
-import {clearValidation, enableValidation} from "./validation";
+import {clearValidation, enableValidation, renderLoading} from "./validation";
 import {setProfileData} from "./components/profile";
 import {addCard, getInitialCards, getUserData, updateAvatar, updateUserData} from "./api";
 
@@ -54,14 +54,14 @@ formNewPlace.addEventListener("submit", addNewPlace);
 popups.forEach(elem => {
         elem.classList.add("popup_is-animated");
         elem.addEventListener("click", closePopupByOverlayClick);
-        if (elem.querySelector('.popup__form') !== null) {
+        if (elem.querySelector(".popup__form") !== null) {
             enableValidation({
-                formSelector: elem.querySelector('.popup__form'),
-                inputSelector: '.popup__input',
-                submitButtonSelector: '.popup__button',
-                inactiveButtonClass: 'popup__button_disabled',
-                inputErrorClass: 'popup__input_type_error',
-                errorClass: 'popup__error_visible'
+                formSelector: elem.querySelector(".popup__form"),
+                inputSelector: ".popup__input",
+                submitButtonSelector: ".popup__button",
+                inactiveButtonClass: "popup__button_disabled",
+                inputErrorClass: "popup__input_type_error",
+                errorClass: "popup__error_visible"
             });
         }
     }
@@ -76,6 +76,7 @@ closePopupButtons.forEach(elem =>
 
 async function updateProfile(evt) {
     evt.preventDefault();
+    renderLoading(popupEditProfile);
     await updateUserData(inputProfileName.value, inputProfileDescription.value)
     currentProfileName.textContent = inputProfileName.value;
     currentProfileDescription.textContent = inputProfileDescription.value;
@@ -87,32 +88,33 @@ function setDefaultValuesFormProfile() {
     inputProfileDescription.value = currentProfileDescription.textContent;
     const validationConfig = {
         formSelector: formEditProfile,
-        inputSelector: '.popup__input',
-        submitButtonSelector: '.popup__button',
-        inactiveButtonClass: 'popup__button_disabled',
-        inputErrorClass: 'popup__input_type_error',
-        errorClass: 'popup__error_visible'
+        inputSelector: ".popup__input",
+        submitButtonSelector: ".popup__button",
+        inactiveButtonClass: "popup__button_disabled",
+        inputErrorClass: "popup__input_type_error",
+        errorClass: "popup__error_visible"
     }
     clearValidation(formEditProfile, validationConfig);
 }
 
 function setDefaultValuesAddNewCard() {
-    inputPlaceName.value = '';
-    inputLink.value = '';
+    inputPlaceName.value = "";
+    inputLink.value = "";
     const validationConfig = {
         formSelector: formNewPlace,
-        inputSelector: '.popup__input',
-        submitButtonSelector: '.popup__button',
-        inactiveButtonClass: 'popup__button_disabled',
-        inputErrorClass: 'popup__input_type_error',
-        errorClass: 'popup__error_visible'
+        inputSelector: ".popup__input",
+        submitButtonSelector: ".popup__button",
+        inactiveButtonClass: "popup__button_disabled",
+        inputErrorClass: "popup__input_type_error",
+        errorClass: "popup__error_visible"
     }
     clearValidation(formNewPlace, validationConfig);
 }
 
 async function addNewPlace(evt) {
     evt.preventDefault();
-    await addCard(inputPlaceName.value, inputLink.value)
+    renderLoading(popupAddNewCard);
+    await addCard(inputPlaceName.value, inputLink.value);
     placeContainer.prepend(createCard({
         name: inputPlaceName.value,
         link: inputLink.value,
