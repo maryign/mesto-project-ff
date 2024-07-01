@@ -2,7 +2,7 @@ import {deleteCard, dislikeCard, setLikeForCard} from "../api";
 
 const cardTemplate = document.querySelector("#card-template").content;
 
-export function createCard(cardData, openImageFunc) {
+export function createCard(cardData, removeFunc, likeFunction, openImageFunc) {
     const cardElement = cardTemplate.querySelector(".card").cloneNode(true);
     const removeButton = cardElement.querySelector(".card__delete-button");
     const likeButton = cardElement.querySelector(".card__like-button");
@@ -13,22 +13,31 @@ export function createCard(cardData, openImageFunc) {
     cardImage.src = cardData.link;
     cardImage.alt = cardData.name;
     likeCount.textContent = cardData.likes?.length || 0;
-    removeButton.addEventListener("click", function (evt) {
-        deleteCard(cardData._id).then(function (res) {
-            const listItem = evt.target.closest(".card");
-            listItem.remove();
-        })
+    removeButton.addEventListener("click",function (evt) {
+        removeFunc(evt, cardData._id)
     });
     likeButton.addEventListener("click", function (evt) {
-        evt.target.classList.contains("card__like-button_is-active") ?
-            dislikeCard(cardData._id).then(res => {
-                likeCount.textContent = res.likes.length;
-            }) :
-            setLikeForCard(cardData._id).then(res => {
-                likeCount.textContent = res.likes.length;
-            })
-        evt.target.classList.toggle("card__like-button_is-active");
+        likeFunction(evt, cardData._id)
     });
     cardImage.addEventListener("click", openImageFunc);
     return cardElement
+}
+
+export function removeCard(evt, id) {
+    deleteCard(id).then(function (res) {
+        const listItem = evt.target.closest(".card");
+        listItem.remove();
+    })
+}
+
+export function setLike(evt, id) {
+    const likeCount = evt.target.nextElementSibling;
+    evt.target.classList.contains("card__like-button_is-active") ?
+        dislikeCard(id).then(res => {
+            likeCount.textContent = res.likes.length;
+        }) :
+        setLikeForCard(id).then(res => {
+            likeCount.textContent = res.likes.length;
+        })
+    evt.target.classList.toggle("card__like-button_is-active");
 }

@@ -1,5 +1,5 @@
 import "../pages/index.css";
-import {createCard} from "./components/card";
+import {createCard, removeCard, setLike} from "./components/card";
 import {closeModal, closePopupByOverlayClick, openModal} from "./components/modal";
 import {clearValidation, enableValidation, renderLoading} from "./validation";
 import {setProfileData} from "./components/profile";
@@ -29,7 +29,7 @@ Promise.all([getUserData(), getInitialCards()])
     .then((results) => {
         setProfileData(results[0]);
         results[1].forEach(function (elem) {
-            const newCard = createCard(elem, openCardImage);
+            const newCard = createCard(elem,removeCard, setLike, openCardImage);
             if (results[0]._id != elem.owner._id) {
                 const removeButton = newCard.querySelector(".card__delete-button");
                 removeButton.remove()
@@ -118,7 +118,7 @@ async function addNewPlace(evt) {
     placeContainer.prepend(createCard({
         name: inputPlaceName.value,
         link: inputLink.value,
-    }, openCardImage));
+    }, removeCard, setLike, openCardImage));
     closeModal(popupAddNewCard);
     inputPlaceName.value = "";
     inputLink.value = "";
