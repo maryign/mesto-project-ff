@@ -24,7 +24,10 @@ function editProfilePhoto() {
     formUpdatePhoto.addEventListener("submit", function (evt) {
         renderLoading(popupEditProfilePhoto);
         updateAvatar(linkField.value).then(res => {
+            profilePhoto.setAttribute(`style`, `background-image: url(${res.avatar})`);
             closeModal(popupEditProfilePhoto)
-        })
+        }).catch((err) => {
+            console.log(err);
+        });
     });
 }

@@ -25,17 +25,25 @@ const placesContainer = document.querySelector(".places");
 const placeContainer = placesContainer.querySelector(".places__list");
 const closePopupButtons = document.querySelectorAll(".popup__close");
 
+const validationConfig = {
+    formSelector: ".popup__form",
+    inputSelector: ".popup__input",
+    submitButtonSelector: ".popup__button",
+    inactiveButtonClass: "popup__button_disabled",
+    inputErrorClass: "popup__input_type_error",
+    errorClass: "popup__error_visible"
+}
+
 Promise.all([getUserData(), getInitialCards()])
-    .then((results) => {
-        setProfileData(results[0]);
-        results[1].forEach(function (elem) {
-            const newCard = createCard(elem,removeCard, setLike, openCardImage);
-            if (results[0]._id != elem.owner._id) {
-                const removeButton = newCard.querySelector(".card__delete-button");
-                removeButton.remove()
-            }
+    .then(([userData, initialCards]) => {
+        setProfileData(userData);
+        initialCards.forEach(function (elem) {
+            const newCard = createCard(elem, userData._id, removeCard, setLike, openCardImage);
             placeContainer.append(newCard);
         })
+    })
+    .catch((err) => {
+        console.log(err);
     });
 
 buttonEditProfile.addEventListener("click", function (evt) {
@@ -54,18 +62,17 @@ formNewPlace.addEventListener("submit", addNewPlace);
 popups.forEach(elem => {
         elem.classList.add("popup_is-animated");
         elem.addEventListener("click", closePopupByOverlayClick);
-        if (elem.querySelector(".popup__form") !== null) {
-            enableValidation({
-                formSelector: elem.querySelector(".popup__form"),
-                inputSelector: ".popup__input",
-                submitButtonSelector: ".popup__button",
-                inactiveButtonClass: "popup__button_disabled",
-                inputErrorClass: "popup__input_type_error",
-                errorClass: "popup__error_visible"
-            });
-        }
     }
 )
+
+enableValidation({
+    formSelector: ".popup__form",
+    inputSelector: ".popup__input",
+    submitButtonSelector: ".popup__button",
+    inactiveButtonClass: "popup__button_disabled",
+    inputErrorClass: "popup__input_type_error",
+    errorClass: "popup__error_visible"
+});
 
 closePopupButtons.forEach(elem =>
     elem.addEventListener("click", function (evt) {
@@ -77,51 +84,35 @@ closePopupButtons.forEach(elem =>
 async function updateProfile(evt) {
     evt.preventDefault();
     renderLoading(popupEditProfile);
-    await updateUserData(inputProfileName.value, inputProfileDescription.value)
-    currentProfileName.textContent = inputProfileName.value;
-    currentProfileDescription.textContent = inputProfileDescription.value;
+    updateUserData(inputProfileName.value, inputProfileDescription.value).then(function (res) {
+        currentProfileName.textContent = res.name;
+        currentProfileDescription.textContent = res.about;
+    }).catch((err) => {
+        console.log(err);
+    });
     closeModal(popupEditProfile);
 }
 
 function setDefaultValuesFormProfile() {
     inputProfileName.value = currentProfileName.textContent;
     inputProfileDescription.value = currentProfileDescription.textContent;
-    const validationConfig = {
-        formSelector: formEditProfile,
-        inputSelector: ".popup__input",
-        submitButtonSelector: ".popup__button",
-        inactiveButtonClass: "popup__button_disabled",
-        inputErrorClass: "popup__input_type_error",
-        errorClass: "popup__error_visible"
-    }
     clearValidation(formEditProfile, validationConfig);
 }
 
 function setDefaultValuesAddNewCard() {
-    inputPlaceName.value = "";
-    inputLink.value = "";
-    const validationConfig = {
-        formSelector: formNewPlace,
-        inputSelector: ".popup__input",
-        submitButtonSelector: ".popup__button",
-        inactiveButtonClass: "popup__button_disabled",
-        inputErrorClass: "popup__input_type_error",
-        errorClass: "popup__error_visible"
-    }
+    formNewPlace.reset();
     clearValidation(formNewPlace, validationConfig);
 }
 
 async function addNewPlace(evt) {
     evt.preventDefault();
     renderLoading(popupAddNewCard);
-    await addCard(inputPlaceName.value, inputLink.value);
-    placeContainer.prepend(createCard({
-        name: inputPlaceName.value,
-        link: inputLink.value,
-    }, removeCard, setLike, openCardImage));
-    closeModal(popupAddNewCard);
-    inputPlaceName.value = "";
-    inputLink.value = "";
+    addCard(inputPlaceName.value, inputLink.value).then(function (res) {
+        placeContainer.prepend(createCard(res, res.owner._id, removeCard, setLike, openCardImage));
+        closeModal(popupAddNewCard);
+    }).catch((err) => {
+        console.log(err);
+    });
 }
 
 function openCardImage(event) {
